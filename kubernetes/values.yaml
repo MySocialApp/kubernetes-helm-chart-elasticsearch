@@ -1,0 +1,35 @@
+### Master nodes ###
+
+# Set where elasticsearch local data should be located
+elasticsearchMasterNodeSelector: worker
+
+# Number of nodes
+elasticsearchMasterReplicaCount: 3
+# Number of maximum dead nodes
+elasticsearchMasterMaxUnavailableNodes: 1
+
+# Elasticsearch common settings
+elasticsearchMasterImageVersion: "5.6.4"
+elasticsearchMasterJavaOptions: "-Xms256m -Xmx256m"
+
+### Data nodes ###
+
+elasticsearchDataNodeSelector: worker
+# Update deployed date to force a rolling upgrade
+elasticsearchDataDeployedDate: ""
+
+elasticsearchDataReplicaCount: 3
+elasticsearchDataMaxUnavailableNodes: 1
+
+elasticsearchDataImageVersion: "5.6.4"
+elasticsearchDataJavaOptions: "-Xms4g -Xmx4g"
+
+### Client nodes ###
+
+elasticsearchClientNodeSelector: worker
+
+elasticsearchClientReplicaCount: 3
+elasticsearchClientMaxUnavailableNodes: 1
+
+elasticsearchClientImageVersion: "5.6.4"
+elasticsearchClientJavaOptions: "-Xms1g -Xmx1g"

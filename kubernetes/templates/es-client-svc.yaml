@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kubernetes.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    component: {{ template "kubernetes.name" . }}
+    role: client
+spec:
+  selector:
+    component: {{ template "kubernetes.name" . }}
+    role: client
+  ports:
+  - name: http
+    port: 9200
+    protocol: TCP

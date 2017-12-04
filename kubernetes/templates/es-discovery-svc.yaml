@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kubernetes.name" . }}-discovery
+  namespace: {{ .Release.Namespace }}
+  labels:
+    component: {{ template "kubernetes.name" . }}
+    role: master
+spec:
+  selector:
+    component: {{ template "kubernetes.name" . }}
+    role: master
+  ports:
+  - name: transport
+    port: 9300
+    protocol: TCP

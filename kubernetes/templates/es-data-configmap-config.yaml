@@ -1,0 +1,149 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ template "kubernetes.name" . }}-data-config
+  namespace: {{ .Release.Namespace }}
+data:
+  elasticsearch.yml: |
+    # Default params
+    cluster:
+      name: ${CLUSTER_NAME}
+
+    node:
+      master: ${NODE_MASTER}
+      data: ${NODE_DATA}
+      name: ${NODE_NAME}
+      ingest: ${NODE_INGEST}
+      max_local_storage_nodes: ${MAX_LOCAL_STORAGE_NODES}
+
+    network.host: ${NETWORK_HOST}
+
+    path:
+      data: /data/data
+      logs: /data/log
+
+    bootstrap:
+      memory_lock: ${MEMORY_LOCK}
+
+    http:
+      enabled: ${HTTP_ENABLE}
+      compression: true
+      cors:
+        enabled: ${HTTP_CORS_ENABLE}
+        allow-origin: ${HTTP_CORS_ALLOW_ORIGIN}
+
+    discovery:
+      zen:
+        ping.unicast.hosts: ${DISCOVERY_SERVICE}
+        minimum_master_nodes: ${NUMBER_OF_MASTERS}
+
+    # Custom tuning
+    cluster.routing.allocation.same_shard.host: true
+    indices.recovery.max_bytes_per_sec: 400mb
+  jvm.options: |
+    ## JVM configuration
+
+    #-Xms2g
+    #-Xmx2g
+
+    ## GC configuration
+
+    # Use G1
+    -XX:-UseParNewGC
+    -XX:-UseConcMarkSweepGC
+    -XX:+UseG1GC
+    -XX:+UseCondCardMark
+    -XX:MaxGCPauseMillis=200
+    -XX:GCPauseIntervalMillis=1000
+    -XX:InitiatingHeapOccupancyPercent=35
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+AlwaysPreTouch
+    -XX:-HeapDumpOnOutOfMemoryError
+
+    # Use CMS
+    #-XX:+UseConcMarkSweepGC
+    #-XX:CMSInitiatingOccupancyFraction=75
+    #-XX:+UseCMSInitiatingOccupancyOnly
+
+    ## optimizations
+
+    # disable calls to System#gc
+    -XX:+DisableExplicitGC
+
+    # pre-touch memory pages used by the JVM during initialization
+    -XX:+AlwaysPreTouch
+
+    ## basic
+
+    # force the server VM (remove on 32-bit client JVMs)
+    -server
+
+    # explicitly set the stack size (reduce to 320k on 32-bit client JVMs)
+    -Xss1m
+
+    # set to headless, just in case
+    -Djava.awt.headless=true
+
+    # ensure UTF-8 encoding by default (e.g. filenames)
+    -Dfile.encoding=UTF-8
+
+    # use our provided JNA always versus the system one
+    -Djna.nosys=true
+
+    # use old-style file permissions on JDK9
+    -Djdk.io.permissionsUseCanonicalPath=true
+
+    # flags to keep Netty from being unsafe
+    -Dio.netty.noUnsafe=true
+    -Dio.netty.noKeySetOptimization=true
+
+    # log4j 2
+    -Dlog4j.shutdownHookEnabled=false
+    -Dlog4j2.disable.jmx=true
+    -Dlog4j.skipJansi=true
+
+    # JMX
+    -Dcom.sun.management.jmxremote.port=7199
+    -Dcom.sun.management.jmxremote.ssl=false
+    -Dcom.sun.management.jmxremote.authenticate=false
+
+    ## heap dumps
+
+    # generate a heap dump when an allocation from the Java heap fails
+    # heap dumps are created in the working directory of the JVM
+    -XX:+HeapDumpOnOutOfMemoryError
+
+    # specify an alternative path for heap dumps
+    # ensure the directory exists and has sufficient space
+    #-XX:HeapDumpPath=${heap.dump.path}
+
+    ## GC logging
+
+    #-XX:+PrintGCDetails
+    #-XX:+PrintGCTimeStamps
+    #-XX:+PrintGCDateStamps
+    #-XX:+PrintClassHistogram
+    #-XX:+PrintTenuringDistribution
+    #-XX:+PrintGCApplicationStoppedTime
+
+    # log GC status to a file with time stamps
+    # ensure the directory exists
+    #-Xloggc:${loggc}
+
+    # Elasticsearch 5.0.0 will throw an exception on unquoted field names in JSON.
+    # If documents were already indexed with unquoted fields in a previous version
+    # of Elasticsearch, some operations may throw errors.
+    #
+    # WARNING: This option will be removed in Elasticsearch 6.0.0 and is provided
+    # only for migration purposes.
+    #-Delasticsearch.json.allow_unquoted_field_names=true
+  log4j2.properties: |
+    status = error
+
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = [%d{ISO8601}][%-5p][%-25c{1.}] %marker%m%n
+
+    rootLogger.level = info
+    rootLogger.appenderRef.console.ref = console

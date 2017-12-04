@@ -1,0 +1,11 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "kubernetes.name" . }}-master
+  namespace: {{ .Release.Namespace }}
+spec:
+  maxUnavailable: {{ .Values.elasticsearchMaxUnavailableNodes }}
+  selector:
+    matchLabels:
+      component: {{ template "kubernetes.name" . }}
+      role: master

@@ -1,0 +1,92 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "kubernetes.name" . }}-client
+  namespace: {{ .Release.Namespace }}
+  labels:
+    component: {{ template "kubernetes.name" . }}
+    role: client
+spec:
+  replicas: {{ .Values.elasticsearchClientReplicaCount }}
+  template:
+    metadata:
+      labels:
+        component: {{ template "kubernetes.name" . }}
+        role: client
+    spec:
+      nodeSelector:
+        type: {{ .Values.elasticsearchClientNodeSelector }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: component
+                operator: In
+                values:
+                - {{ template "kubernetes.name" . }}
+              - key: role
+                operator: In
+                values:
+                - client
+            topologyKey: kubernetes.io/hostname
+      initContainers:
+      - name: init-sysctl
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      containers:
+      - name: {{ template "kubernetes.name" . }}-client
+        securityContext:
+          privileged: false
+          capabilities:
+            add:
+              - IPC_LOCK
+              - SYS_RESOURCE
+        image: quay.io/pires/docker-elasticsearch-kubernetes:{{ .Values.elasticsearchClientImageVersion }}
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: "CLUSTER_NAME"
+          value: "{{ .Release.Namespace }}"
+        - name: NODE_MASTER
+          value: "false"
+        - name: NODE_DATA
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "true"
+        - name: DISCOVERY_SERVICE
+          value: elasticsearch-discovery
+        - name: "ES_JAVA_OPTS"
+          value: "{{ .Values.elasticsearchClientJavaOptions }}"
+        livenessProbe:
+          tcpSocket:
+            port: 9300
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+          initialDelaySeconds: 20
+          timeoutSeconds: 5
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: {{ template "kubernetes.name" . }}-client-storage
+          mountPath: /data
+      volumes:
+        - name: {{ template "kubernetes.name" . }}-client-storage
+          hostPath:
+            path: /mnt/data/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/client

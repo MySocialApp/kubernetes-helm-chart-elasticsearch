@@ -1,0 +1,84 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ template "kubernetes.name" . }}-data-scripts
+  namespace: {{ .Release.Namespace }}
+data:
+  postStart.sh: |-
+    #!/bin/sh
+    while [ $(netstat -auntpl | grep LISTEN | grep -c 9300) -eq 0 ] ; do
+      echo "waiting port to be opened"
+      sleep 5
+      pidof java || exit 1
+    done
+
+    # Apply specific config
+    apk update
+    apk -y add curl
+    curl -XPUT 'http://localhost:9200/_all/_settings?preserve_existing=true' -d '{
+      "index.unassigned.node_left.delayed_timeout" : "15m"
+    }'
+
+    exit 0
+  run.sh: |-
+    #!/bin/sh
+
+    # SIGTERM-handler
+    term_handler() {
+      if [ $PID -ne 0 ]; then
+        kill -SIGTERM "$PID"
+        wait "$PID"
+      fi
+      exit 143;
+    }
+
+    PID=0
+    BASE=/elasticsearch
+
+    # allow for memlock
+    ulimit -l unlimited
+
+    # Set a random node name if not set.
+    if [ -z "${NODE_NAME}" ]; then
+        NODE_NAME=$(uuidgen)
+    fi
+    export NODE_NAME=${NODE_NAME}
+
+    # Prevent "Text file busy" errors
+    sync
+
+    if [ ! -z "${ES_PLUGINS_INSTALL}" ]; then
+       OLDIFS=$IFS
+       IFS=','
+       for plugin in ${ES_PLUGINS_INSTALL}; do
+          if ! $BASE/bin/elasticsearch-plugin list | grep -qs ${plugin}; then
+             yes | $BASE/bin/elasticsearch-plugin install --batch ${plugin}
+          fi
+       done
+       IFS=$OLDIFS
+    fi
+
+    if [ ! -z "${SHARD_ALLOCATION_AWARENESS_ATTR}" ]; then
+        # this will map to a file like  /etc/hostname => /dockerhostname so reading that file will get the
+        #  container hostname
+        if [ "$NODE_DATA" == "true" ]; then
+            ES_SHARD_ATTR=`cat ${SHARD_ALLOCATION_AWARENESS_ATTR}`
+            NODE_NAME="${ES_SHARD_ATTR}-${NODE_NAME}"
+            echo "node.attr.${SHARD_ALLOCATION_AWARENESS}: ${ES_SHARD_ATTR}" >> $BASE/config/elasticsearch.yml
+        fi
+        if [ "$NODE_MASTER" == "true" ]; then
+            echo "cluster.routing.allocation.awareness.attributes: ${SHARD_ALLOCATION_AWARENESS}" >> $BASE/config/elasticsearch.yml
+        fi
+    fi
+
+    trap 'kill ${!}; term_handler' SIGTERM
+
+    # run
+    chown -R elasticsearch:elasticsearch $BASE
+    chown -R elasticsearch:elasticsearch /data
+    su-exec elasticsearch $BASE/bin/elasticsearch &
+    PID="$!"
+
+    while true ; do
+      tail -f /dev/null & wait ${!}
+    done
