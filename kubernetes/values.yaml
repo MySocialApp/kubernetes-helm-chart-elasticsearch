@@ -9,7 +9,7 @@ elasticsearchMasterReplicaCount: 3
 elasticsearchMasterMaxUnavailableNodes: 1
 
 # Elasticsearch common settings
-elasticsearchMasterImageVersion: "5.6.4"
+elasticsearchMasterImageVersion: 2.4.5
 elasticsearchMasterJavaOptions: "-Xms256m -Xmx256m"
 
 ### Data nodes ###
@@ -21,15 +21,15 @@ elasticsearchDataDeployedDate: ""
 elasticsearchDataReplicaCount: 3
 elasticsearchDataMaxUnavailableNodes: 1
 
-elasticsearchDataImageVersion: "5.6.4"
+elasticsearchDataImageVersion: 2.4.5
 elasticsearchDataJavaOptions: "-Xms4g -Xmx4g"
 
 ### Client nodes ###
 
 elasticsearchClientNodeSelector: worker
 
-elasticsearchClientReplicaCount: 3
+elasticsearchClientReplicaCount: 2
 elasticsearchClientMaxUnavailableNodes: 1
 
-elasticsearchClientImageVersion: "5.6.4"
+elasticsearchClientImageVersion: 2.4.5
 elasticsearchClientJavaOptions: "-Xms1g -Xmx1g"

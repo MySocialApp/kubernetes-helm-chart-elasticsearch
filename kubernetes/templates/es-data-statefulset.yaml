@@ -1,3 +1,4 @@
+{{- $esDataVersion := .Values.elasticsearchDataImageVersion | trunc 1 -}}
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
@@ -52,7 +53,7 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: quay.io/pires/docker-elasticsearch-kubernetes:{{ .Values.elasticsearchDataImageVersion }}
+        image: {{if eq $esDataVersion "5"}}quay.io/pires/docker-elasticsearch-kubernetes{{end}}{{if eq $esDataVersion "2"}}quay.io/mysocialapp/docker-elasticsearch-kubernetes{{end}}:{{ .Values.elasticsearchDataImageVersion }}
         command: ["/elasticsearch/scripts/run.sh"]
         env:
         - name: NAMESPACE

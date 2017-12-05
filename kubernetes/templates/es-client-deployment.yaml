@@ -1,3 +1,4 @@
+{{- $esClientVersion := .Values.elasticsearchClientImageVersion | trunc 1 -}}
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -45,7 +46,7 @@ spec:
             add:
               - IPC_LOCK
               - SYS_RESOURCE
-        image: quay.io/pires/docker-elasticsearch-kubernetes:{{ .Values.elasticsearchClientImageVersion }}
+        image: {{if eq $esClientVersion "5"}}quay.io/pires/docker-elasticsearch-kubernetes{{end}}{{if eq $esClientVersion "2"}}quay.io/mysocialapp/docker-elasticsearch-kubernetes{{end}}:{{ .Values.elasticsearchClientImageVersion }}
         env:
         - name: NAMESPACE
           valueFrom:
