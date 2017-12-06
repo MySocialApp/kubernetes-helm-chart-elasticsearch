@@ -1,3 +1,4 @@
+{{- if .Values.kibanaEnabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,6 +10,8 @@ spec:
   selector:
     component: kibana
   ports:
-  - name: 80
-    port: 5601
+  - name: http
+    port: 80
+    targetPort: 5601
     protocol: TCP
+{{- end -}}

@@ -1,3 +1,4 @@
+{{- if .Values.kibanaEnabled -}}
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -44,3 +45,4 @@ spec:
         - containerPort: 5601
           name: kibana
           protocol: TCP
+{{- end -}}

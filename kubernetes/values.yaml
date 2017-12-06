@@ -33,3 +33,7 @@ elasticsearchClientMaxUnavailableNodes: 1
 
 elasticsearchClientImageVersion: 2.4.5
 elasticsearchClientJavaOptions: "-Xms1g -Xmx1g"
+
+### Kibana ###
+
+kibanaEnabled: true
