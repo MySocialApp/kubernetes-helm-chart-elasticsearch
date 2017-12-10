@@ -4,7 +4,7 @@ metadata:
   name: {{ template "kubernetes.name" . }}-master
   namespace: {{ .Release.Namespace }}
 spec:
-  maxUnavailable: {{ .Values.elasticsearchMaxUnavailableNodes }}
+  maxUnavailable: {{ .Values.elasticsearchMasterMaxUnavailableNodes }}
   selector:
     matchLabels:
       component: {{ template "kubernetes.name" . }}

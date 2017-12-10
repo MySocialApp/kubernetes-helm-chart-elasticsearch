@@ -61,7 +61,7 @@ spec:
         - name: "CLUSTER_NAME"
           value: "{{ .Release.Namespace }}"
         - name: "NUMBER_OF_MASTERS"
-          value: "{{ .Values.elasticsearchMasterReplicaCount }}"
+          value: "{{ .Values.elasticsearchMasterQuorum }}"
         - name: NODE_MASTER
           value: "true"
         - name: NODE_INGEST

@@ -5,6 +5,8 @@ elasticsearchMasterNodeSelector: worker
 
 # Number of nodes
 elasticsearchMasterReplicaCount: 3
+# Number of minimum master node ( MasterReplicaCount / 2) + 1
+elasticsearchMasterQuorum: 2
 # Number of maximum dead nodes
 elasticsearchMasterMaxUnavailableNodes: 1
 
@@ -15,8 +17,6 @@ elasticsearchMasterJavaOptions: "-Xms256m -Xmx256m"
 ### Data nodes ###
 
 elasticsearchDataNodeSelector: worker
-# Update deployed date to force a rolling upgrade
-elasticsearchDataDeployedDate: ""
 
 elasticsearchDataReplicaCount: 3
 elasticsearchDataMaxUnavailableNodes: 1
