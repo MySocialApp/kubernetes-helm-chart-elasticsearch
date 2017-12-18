@@ -17,7 +17,9 @@ spec:
         component: kibana
     spec:
       nodeSelector:
-        type: worker
+        {{- range $key, $val := .Values.kibanaNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       containers:
       - name: kibana
         image: quay.io/mysocialapp/docker-kibana-no-x-pack:{{ .Values.elasticsearchClientImageVersion }}

@@ -18,7 +18,9 @@ spec:
         role: master
     spec:
       nodeSelector:
-        type: {{ .Values.elasticsearchMasterNodeSelector }}
+        {{- range $key, $val := .Values.elasticsearchMasterNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

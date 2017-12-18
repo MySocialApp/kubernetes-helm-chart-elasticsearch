@@ -1,7 +1,8 @@
 ### Master nodes ###
 
 # Set where elasticsearch local data should be located
-elasticsearchMasterNodeSelector: worker
+elasticsearchMasterNodeSelector:
+  node-role.kubernetes.io/node: "true"
 
 # Number of nodes
 elasticsearchMasterReplicaCount: 3
@@ -16,7 +17,8 @@ elasticsearchMasterJavaOptions: "-Xms256m -Xmx256m"
 
 ### Data nodes ###
 
-elasticsearchDataNodeSelector: worker
+elasticsearchDataNodeSelector:
+  node-role.kubernetes.io/node: "true"
 
 elasticsearchDataReplicaCount: 3
 elasticsearchDataMaxUnavailableNodes: 1
@@ -26,7 +28,8 @@ elasticsearchDataJavaOptions: "-Xms4g -Xmx4g"
 
 ### Client nodes ###
 
-elasticsearchClientNodeSelector: worker
+elasticsearchClientNodeSelector:
+  node-role.kubernetes.io/node: "true"
 
 elasticsearchClientReplicaCount: 2
 elasticsearchClientMaxUnavailableNodes: 1
@@ -37,3 +40,5 @@ elasticsearchClientJavaOptions: "-Xms1g -Xmx1g"
 ### Kibana ###
 
 kibanaEnabled: true
+kibanaNodeSelector:
+  node-role.kubernetes.io/node: "true"

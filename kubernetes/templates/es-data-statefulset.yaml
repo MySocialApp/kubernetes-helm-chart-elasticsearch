@@ -20,7 +20,9 @@ spec:
         deployedDate: "{{ .Release.elasticsearchDataDeployedDate }}"
     spec:
       nodeSelector:
-        type: {{ .Values.elasticsearchDataNodeSelector }}
+        {{- range $key, $val := .Values.elasticsearchDataNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

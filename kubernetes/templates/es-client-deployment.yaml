@@ -16,7 +16,9 @@ spec:
         role: client
     spec:
       nodeSelector:
-        type: {{ .Values.elasticsearchClientNodeSelector }}
+        {{- range $key, $val := .Values.elasticsearchClientNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
