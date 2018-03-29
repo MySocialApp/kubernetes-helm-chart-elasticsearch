@@ -23,6 +23,7 @@ data:
     path:
       data: /data/data
       logs: /data/log
+      scripts: /data/scripts
 
     bootstrap:
       memory_lock: ${MEMORY_LOCK}
@@ -58,6 +59,7 @@ data:
       logs: /data/log
       plugins: /elasticsearch/plugins
       work: /data/work
+      scripts: /data/scripts
 
     bootstrap.mlockall: true
 
