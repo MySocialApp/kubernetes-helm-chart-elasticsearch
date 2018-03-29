@@ -7,6 +7,11 @@ metadata:
 data:
   postStart.sh: |-
     #!/bin/sh
+
+    # Add dependencies
+    apk update
+    apk add curl net-tools
+
     while [ $(netstat -auntpl | grep LISTEN | grep -c 9300) -eq 0 ] ; do
       echo "waiting port to be opened"
       sleep 5
@@ -14,8 +19,6 @@ data:
     done
 
     # Apply specific config
-    apk update
-    apk -y add curl
     curl -XPUT 'http://localhost:9200/_all/_settings?preserve_existing=true' -d '{
       "index.unassigned.node_left.delayed_timeout" : "15m"
     }'
