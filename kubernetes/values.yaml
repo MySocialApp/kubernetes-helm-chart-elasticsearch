@@ -40,5 +40,7 @@ elasticsearchClientJavaOptions: "-Xms1g -Xmx1g"
 ### Kibana ###
 
 kibanaEnabled: true
+#kibanaImage: kibana
+#kibanaVersion: 4.6.6
 kibanaNodeSelector:
   node-role.kubernetes.io/node: "true"

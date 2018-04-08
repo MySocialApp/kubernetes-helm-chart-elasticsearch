@@ -22,7 +22,11 @@ spec:
         {{- end}}
       containers:
       - name: kibana
+        {{ if .Values.kibanaImage }}
+        image: {{ .Values.kibanaImage }}:{{ .Values.kibanaVersion }}
+        {{ else }}
         image: quay.io/mysocialapp/docker-kibana-no-x-pack:{{ .Values.elasticsearchClientImageVersion }}
+        {{ end }}
         env:
         - name: "CLUSTER_NAME"
           value: "{{ .Release.Namespace }}"
