@@ -1,0 +1,19 @@
+{{- if .Values.elasticsearchExporter.exporterEnable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kubernetes.name" . }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "kubernetes.name" . }}-exporter
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  selector:
+    app: {{ template "kubernetes.name" . }}-exporter
+  ports:
+  - name: metrics
+    port: {{ .Values.elasticsearchExporter.exporterPort }}
+    protocol: TCP
+{{- end }}

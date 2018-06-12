@@ -1,0 +1,21 @@
+{{- if .Values.elasticsearchPrometheusScrap }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kubernetes.name" . }}-{{ .Release.Namespace }}
+  namespace: observability
+  labels:
+    app: {{ template "kubernetes.name" . }}-exporter
+    prometheus: observability
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "kubernetes.name" . }}-exporter
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+  - port: metrics
+    interval: 60s
+    scrapeTimeout: {{ .Values.elasticsearchExporter.exporterTimeout }}
+{{- end }}

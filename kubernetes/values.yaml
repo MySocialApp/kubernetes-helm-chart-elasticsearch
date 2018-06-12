@@ -37,6 +37,21 @@ elasticsearchClientMaxUnavailableNodes: 1
 elasticsearchClientImageVersion: 5.6.9
 elasticsearchClientJavaOptions: "-Xms1g -Xmx1g"
 
+### Elasticsearch Exporter ###
+
+elasticsearchExporter:
+  exporterEnable: false
+  exporterReplicas: 1
+  exporterImageRepository: justwatch/elasticsearch_exporter
+  exporterImageTag: 1.0.2
+  exporterUri: http://elasticsearch:9200
+  exporterAll: true
+  exporterIndices: true
+  exporterTimeout: 59s
+  exporterPort: 9108
+elasticsearchPrometheusScrap: false
+elasticsearchAlertmanager: false
+
 ### Kibana ###
 
 kibanaEnabled: true

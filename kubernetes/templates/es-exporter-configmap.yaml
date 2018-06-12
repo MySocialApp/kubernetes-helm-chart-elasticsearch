@@ -1,0 +1,17 @@
+{{- if .Values.elasticsearchAlertmanager }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kubernetes.name" . }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "kubernetes.name" . }}-exporter
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    prometheus: {{ .Release.Namespace }}
+    release: {{ .Release.Name }}
+    role: alert-rules
+data:
+  alerts.rules: |-
+    {{- include "elastic-alerts.rules.yaml.tpl" . | indent 4}}
+{{ end }}
