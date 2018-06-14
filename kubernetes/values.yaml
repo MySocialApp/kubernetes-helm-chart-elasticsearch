@@ -49,8 +49,23 @@ elasticsearchExporter:
   exporterIndices: true
   exporterTimeout: 59s
   exporterPort: 9108
+
+### Prometheus scraping & alerting ###
+
 elasticsearchPrometheusScrap: false
-elasticsearchAlertmanager: false
+elasticsearchAlertmanager:
+  alertsEnabled: false
+  alertLabels:
+    sloInterrupt:
+      serviceLevel: objective
+      severity: interrupt
+      team: infra
+      type: functional
+    sloPage:
+      serviceLevel: objective
+      severity: page
+      team: infra
+      type: functional
 
 ### Kibana ###
 

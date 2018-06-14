@@ -1,4 +1,4 @@
-{{- if .Values.elasticsearchAlertmanager }}
+{{- if .Values.elasticsearchAlertmanager.alertsEnabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,6 +12,6 @@ metadata:
     release: {{ .Release.Name }}
     role: alert-rules
 data:
-  alerts.rules: |-
-    {{- include "elastic-alerts.rules.yaml.tpl" . | indent 4}}
+  elasticsearch.rules: |-
+    {{- include "elasticsearch.rules.yaml.tpl" . | indent 4}}
 {{ end }}
