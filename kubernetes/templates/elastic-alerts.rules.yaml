@@ -3,7 +3,7 @@ groups:
 - name: elasticsearch.rules
   rules:
   - alert: Elastic_UP
-    expr: elasticsearch_up{job="elasticsearch"} != 1
+    expr: elasticsearch_node_stats_up{job="elasticsearch", namespace="{{ .Release.Namespace }}"} != 1
     for: 120s
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloInterrupt | indent 6 }}
@@ -11,7 +11,7 @@ groups:
       description: "This server's Elasticsearch instance status has a value of {{`{{$value`}}."
       summary: "Instance {{`{{$labels.instance}}`}}: Elasticsearch instance status is not 1"
   - alert: Elastic_Cluster_Health_RED
-    expr: elasticsearch_cluster_health_status{color="red"}==1
+    expr: elasticsearch_cluster_health_status{color="red", namespace="{{ .Release.Namespace }}"}==1
     for: 2m
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloPage | indent 6 }}
@@ -19,7 +19,7 @@ groups:
       description: "Instance {{`{{$labels.instance}}`}}: not all primary and replica shards are allocated in elasticsearch cluster {{`{{$labels.cluster }}`}}."
       summary: "Instance {{`{{$labels.instance}}`}}: not all primary and replica shards are allocated in elasticsearch cluster {{`{{$labels.cluster }}`}}"
   - alert: Elastic_Cluster_Health_Yellow
-    expr: elasticsearch_cluster_health_status{color="yellow"}==1
+    expr: elasticsearch_cluster_health_status{color="yellow", namespace="{{ .Release.Namespace }}"}==1
     for: 5m
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloInterrupt | indent 6 }}
@@ -27,7 +27,7 @@ groups:
       description: "Instance {{`{{$labels.instance}}`}}: not all primary and replica shards are allocated in elasticsearch cluster {{`{{$labels.cluster }}`}}."
       summary: "Instance {{`{{$labels.instance}}`}}: not all primary and replica shards are allocated in elasticsearch cluster {{`{{$labels.cluster }}`}}"
   - alert: Elasticsearch_JVM_Heap_Too_High
-    expr: elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"} > 0.8
+    expr: elasticsearch_jvm_memory_used_bytes{area="heap", namespace="{{ .Release.Namespace }}"} / elasticsearch_jvm_memory_max_bytes{area="heap", namespace="{{ .Release.Namespace }}"} > 0.8
     for: 10m
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloInterrupt | indent 6 }}
@@ -35,7 +35,7 @@ groups:
       description: "The heap in {{`{{$labels.instance}}`}} is over 80% for 10m."
       summary: "ElasticSearch node {{`{{$labels.instance}}`}} heap usage is high"
   - alert: Elasticsearch_health_up
-    expr: elasticsearch_cluster_health_up !=1
+    expr: elasticsearch_cluster_health_up{namespace="{{ .Release.Namespace }}"} !=1
     for: 3m
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloInterrupt | indent 6 }}
@@ -43,7 +43,7 @@ groups:
       description: "ElasticSearch node: {{`{{$labels.instance}}`}} last scrape of the ElasticSearch cluster health failed"
       summary: "ElasticSearch node: {{`{{$labels.instance}}`}} last scrape of the ElasticSearch cluster health failed"
   - alert: Elasticsearch_Too_Few_Nodes_Running
-    expr: elasticsearch_cluster_health_number_of_nodes < 2
+    expr: elasticsearch_cluster_health_number_of_nodes{namespace="{{ .Release.Namespace }}"} < 2
     for: 3m
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloPage | indent 6 }}
@@ -51,7 +51,7 @@ groups:
       description: "ElasticSearch node: {{`{{$labels.instance}}`}} last scrape of the ElasticSearch cluster health failed"
       summary: "ElasticSearch node: {{`{{$labels.instance}}`}} last scrape of the ElasticSearch cluster health failed"
   - alert: Elasticsearch_Count_of_JVM_GC_Runs
-    expr: rate(elasticsearch_jvm_gc_collection_seconds_count{}[5m])>5
+    expr: rate(elasticsearch_jvm_gc_collection_seconds_count{namespace="{{ .Release.Namespace }}"}[5m]) > 5
     for: 1m
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloInterrupt | indent 6 }}
@@ -59,7 +59,7 @@ groups:
       description: "ElasticSearch node {{`{{$labels.instance}}`}}: GC run time in seconds > 0.3 sec and has a value of {{`{{$value}}`}}"
       summary: "ElasticSearch node {{`{{$labels.instance}}`}}: GC run time in seconds > 0.3 sec and has a value of {{`{{$value}}`}}"
   - alert: Elasticsearch_json_parse_failures
-    expr: elasticsearch_cluster_health_json_parse_failures>0
+    expr: elasticsearch_cluster_health_json_parse_failures{namespace="{{ .Release.Namespace }}"} > 0
     for: 1m
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloInterrupt | indent 6 }}
@@ -67,7 +67,7 @@ groups:
       description: "ElasticSearch node {{`{{$labels.instance}}`}}: json parse failures > 0 and has a value of {{`{{$value}}`}}"
       summary: "ElasticSearch node {{`{{$labels.instance}}`}}: json parse failures > 0 and has a value of {{`{{$value}}`}}"
   - alert: Elasticsearch_breakers_tripped
-    expr: rate(elasticsearch_breakers_tripped{}[5m])>0
+    expr: rate(elasticsearch_breakers_tripped{namespace="{{ .Release.Namespace }}"}[5m]) > 0
     for: 60s
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloInterrupt | indent 6 }}
@@ -75,7 +75,7 @@ groups:
       description: "ElasticSearch node {{`{{$labels.instance}}`}}: breakers tripped > 0 and has a value of {{`{{$value}}`}}"
       summary: "ElasticSearch node {{`{{$labels.instance}}`}}: breakers tripped > 0 and has a value of {{`{{$value}}`}}"
   - alert: Elasticsearch_health_timed_out
-    expr: elasticsearch_cluster_health_timed_out>0
+    expr: elasticsearch_cluster_health_timed_out{namespace="{{ .Release.Namespace }}"} > 0
     for: 60s
     labels:
 {{ toYaml .Values.elasticsearchAlertmanager.alertLabels.sloInterrupt | indent 6 }}
