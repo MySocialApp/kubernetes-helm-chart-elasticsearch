@@ -70,6 +70,8 @@ spec:
           value: elasticsearch-discovery
         - name: "ES_JAVA_OPTS"
           value: "{{ .Values.elasticsearchClientJavaOptions }}"
+        resources:
+{{ toYaml .Values.elasticsearchClientResources | indent 12 }}
         livenessProbe:
           tcpSocket:
             port: 9300

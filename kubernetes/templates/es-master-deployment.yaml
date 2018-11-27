@@ -10,7 +10,9 @@ metadata:
 spec:
   replicas: {{ .Values.elasticsearchMasterReplicaCount }}
   strategy:
-    type: Recreate
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
       labels:

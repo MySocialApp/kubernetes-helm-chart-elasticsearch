@@ -36,6 +36,13 @@ elasticsearchClientMaxUnavailableNodes: 1
 
 elasticsearchClientImageVersion: 5.6.9
 elasticsearchClientJavaOptions: "-Xms1g -Xmx1g"
+elasticsearchClientResources: {}
+#  limits:
+#    memory: 4G
+#    cpu: 500m
+#  requests:
+#    memory: 4G
+#    cpu: 500m
 
 ### Elasticsearch Exporter ###
 
@@ -49,6 +56,13 @@ elasticsearchExporter:
   exporterIndices: true
   exporterTimeout: 59s
   exporterPort: 9108
+  resources:
+    limits:
+      cpu: 300m
+      memory: 100M
+    requests:
+      cpu: 200m
+      memory: 64M
 
 ### Prometheus scraping & alerting ###
 
@@ -74,3 +88,10 @@ kibanaEnabled: true
 #kibanaVersion: 4.6.6
 kibanaNodeSelector:
   node-role.kubernetes.io/node: "true"
+kibanaResources:
+  limits:
+    cpu: 300m
+    memory: 384M
+  requests:
+    cpu: 200m
+    memory: 256M
