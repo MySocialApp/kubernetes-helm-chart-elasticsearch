@@ -91,6 +91,7 @@ kibanaEnabled: true
 #kibanaVersion: 4.6.6
 kibanaNodeSelector:
   node-role.kubernetes.io/node: "true"
+  stateless: "true"
 kibanaResources:
   limits:
     cpu: 300m
