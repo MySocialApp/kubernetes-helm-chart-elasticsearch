@@ -25,6 +25,10 @@ spec:
         app: {{ template "kubernetes.name" . }}-exporter
         release: "{{ .Release.Name }}"
     spec:
+      nodeSelector:
+        {{- range $key, $val := .Values.elasticsearchExporter.exporterNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       restartPolicy: {{ .Values.restartPolicy }}
       securityContext:
         runAsNonRoot: true

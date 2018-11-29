@@ -49,6 +49,9 @@ elasticsearchClientResources: {}
 elasticsearchExporter:
   exporterEnable: false
   exporterReplicas: 1
+  exporterNodeSelector:
+    node-role.kubernetes.io/node: "true"
+    stateless: "true"
   exporterImageRepository: justwatch/elasticsearch_exporter
   exporterImageTag: 1.0.2
   exporterUri: http://elasticsearch:9200
