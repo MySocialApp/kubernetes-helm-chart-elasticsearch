@@ -92,10 +92,10 @@ kibanaEnabled: true
 kibanaNodeSelector:
   node-role.kubernetes.io/node: "true"
   stateless: "true"
-kibanaResources:
-  limits:
-    cpu: 300m
-    memory: 384M
-  requests:
-    cpu: 200m
-    memory: 256M
+kibanaResources: {}
+#  limits:
+#    cpu: 500m
+#    memory: 768M
+#  requests:
+#    cpu: 300m
+#    memory: 256M

@@ -43,10 +43,7 @@ spec:
         - name: XPACK_REPORTING_ENABLED
           value: 'false'
         resources:
-          limits:
-            cpu: 1000m
-          requests:
-            cpu: 100m
+{{ toYaml .Values.kibanaResources | indent 12 }}
         ports:
         - containerPort: 5601
           name: kibana
