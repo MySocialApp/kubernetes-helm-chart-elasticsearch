@@ -87,7 +87,7 @@ data:
     addgroup sudo
     adduser -D -g '' elasticsearch
     adduser elasticsearch sudo
-    chown -R elasticsearch /elasticsearch /data
+    chown elasticsearch /elasticsearch /data
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
     sudo -E -u elasticsearch /elasticsearch/bin/elasticsearch &
     {{ end }}
