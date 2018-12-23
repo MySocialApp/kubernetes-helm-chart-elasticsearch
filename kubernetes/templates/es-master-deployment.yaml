@@ -91,4 +91,4 @@ spec:
       volumes:
         - name: {{ template "kubernetes.name" . }}-master-storage
           hostPath:
-            path: /mnt/data/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/master
+            path: {{ .Values.elasticsearchPathPrefix }}/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/master

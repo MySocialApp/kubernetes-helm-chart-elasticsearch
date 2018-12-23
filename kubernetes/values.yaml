@@ -14,6 +14,7 @@ elasticsearchMasterMaxUnavailableNodes: 1
 # Elasticsearch common settings
 elasticsearchMasterImageVersion: 5.6.9
 elasticsearchMasterJavaOptions: "-Xms256m -Xmx256m"
+elasticsearchPathPrefix: "/mnt/data"
 
 ### Data nodes ###
 

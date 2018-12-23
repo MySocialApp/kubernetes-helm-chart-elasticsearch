@@ -105,7 +105,7 @@ spec:
       volumes:
         - name: {{ template "kubernetes.name" . }}-data-storage
           hostPath:
-            path: /mnt/data/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/data
+            path: {{ .Values.elasticsearchPathPrefix }}/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/data
         - name: {{ template "kubernetes.name" . }}-data-config
           configMap:
             name: {{ template "kubernetes.name" . }}-data-config

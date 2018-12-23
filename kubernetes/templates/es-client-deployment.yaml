@@ -94,4 +94,4 @@ spec:
       volumes:
         - name: {{ template "kubernetes.name" . }}-client-storage
           hostPath:
-            path: /mnt/data/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/client
+            path: {{ .Values.elasticsearchPathPrefix }}/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/client
