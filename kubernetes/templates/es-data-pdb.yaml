@@ -3,9 +3,15 @@ kind: PodDisruptionBudget
 metadata:
   name: {{ template "kubernetes.name" . }}-data
   namespace: {{ .Release.Namespace }}
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ template "kubernetes.name" . }}"
+    role: data
 spec:
   maxUnavailable: {{ .Values.elasticsearchDataMaxUnavailableNodes }}
   selector:
     matchLabels:
-      component: {{ template "kubernetes.name" . }}
+      app: "{{ template "kubernetes.name" . }}"
       role: data

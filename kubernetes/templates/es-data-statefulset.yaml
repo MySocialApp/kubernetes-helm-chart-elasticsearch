@@ -1,87 +1,89 @@
-{{- $esDataVersion := .Values.elasticsearchDataImageVersion | trunc 1 -}}
+{{- if .Values.elasticsearchDataEnable }}
+{{- $ChartName := .Chart.Name -}}
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: {{ template "kubernetes.name" . }}-data
+  name: "{{ template "kubernetes.name" . }}-data"
   namespace: {{ .Release.Namespace }}
   labels:
-    component: {{ template "kubernetes.name" . }}
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ template "kubernetes.name" . }}"
     role: data
 spec:
-  serviceName: {{ template "kubernetes.name" . }}
+  serviceName: "{{ template "kubernetes.name" . }}-headless"
+  replicas: {{ .Values.elasticsearchDataReplicaCount }}
   updateStrategy:
     type: "RollingUpdate"
-  replicas: {{ .Values.elasticsearchDataReplicaCount }}
+  selector:
+    matchLabels:
+      app: "{{ template "kubernetes.name" . }}"
+      role: data
   template:
     metadata:
       labels:
-        component: {{ template "kubernetes.name" . }}
+        app: "{{ template "kubernetes.name" . }}"
         role: data
-        deployedDate: "{{ .Release.elasticsearchDataDeployedDate }}"
     spec:
       nodeSelector:
-        {{- range $key, $val := .Values.elasticsearchDataNodeSelector }}
-        {{ $key }}: {{ $val | quote }}
-        {{- end}}
+{{ toYaml .Values.elasticsearchDataNodeSelector | indent 6 }}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-              - key: component
+              - key: app
                 operator: In
                 values:
-                - {{ template "kubernetes.name" . }}
+                - "{{ template "kubernetes.name" . }}"
               - key: role
                 operator: In
                 values:
                 - data
             topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 1000
       initContainers:
-      - name: init-sysctl
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        command:
-          - "/bin/sh"
-          - "-c"
-          - "sleep 30 ; sysctl -w vm.max_map_count=262144"
+      - name: configure-sysctl
+        image: "{{ .Values.elasticsearchImage }}:{{ .Values.elasticsearchImageVersion }}"
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
         securityContext:
+          runAsUser: 0
           privileged: true
       terminationGracePeriodSeconds: 30000
       containers:
       - name: {{ template "kubernetes.name" . }}-data
-        securityContext:
-          privileged: true
-          capabilities:
-            add:
-              - IPC_LOCK
-        image: {{if eq $esDataVersion "5"}}quay.io/pires/docker-elasticsearch-kubernetes{{end}}{{if eq $esDataVersion "2"}}quay.io/mysocialapp/docker-elasticsearch-kubernetes{{end}}:{{ .Values.elasticsearchDataImageVersion }}
-        command: ["/elasticsearch/scripts/run.sh"]
+        image: "{{ .Values.elasticsearchImage }}:{{ .Values.elasticsearchImageVersion }}"
+        command: ["/usr/share/elasticsearch/scripts/run_override.sh"]
         env:
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: NODE_NAME
+        - name: node.name
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        - name: "CLUSTER_NAME"
+        - name: discovery.zen.ping.unicast.hosts
+          value: "{{ template "kubernetes.name" . }}-headless"
+        - name: cluster.name
           value: "{{ .Release.Namespace }}"
-        - name: NODE_MASTER
-          value: "false"
-        - name: NODE_INGEST
-          value: "false"
-        - name: HTTP_ENABLE
-          value: "false"
-        - name: DISCOVERY_SERVICE
-          value: elasticsearch-discovery
+        - name: discovery.zen.minimum_master_nodes
+          value: "{{ .Values.elasticsearchMasterQuorum }}"
+        - name: network.host
+          value: "0.0.0.0"
         - name: "ES_JAVA_OPTS"
           value: "{{ .Values.elasticsearchDataJavaOptions }}"
+        - name: node.master
+          value: "false"
+        - name: node.data
+          value: "true"
+        - name: node.ingest
+          value: "false"
+{{- if .Values.elasticsearchDataExtraVars }}
+{{ toYaml .Values.elasticsearchDataExtraVars | indent 8 }}
+{{- end }}
         lifecycle:
           postStart:
             exec:
-              command: ["/elasticsearch/scripts/postStart.sh"]
+              command: ["/usr/share/elasticsearch/scripts/postStart.sh"]
           preStop:
             httpGet:
               path: /_cluster/health?wait_for_status=green&timeout=28800s
@@ -91,25 +93,44 @@ spec:
             port: 9300
           initialDelaySeconds: 60
           periodSeconds: 10
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 3
+          timeoutSeconds: 10
+          exec:
+            command: ["/usr/share/elasticsearch/scripts/readiness.sh"]
         ports:
         - containerPort: 9300
           name: transport
           protocol: TCP
         volumeMounts:
         - name: {{ template "kubernetes.name" . }}-data-storage
-          mountPath: /data
-        - name: {{ template "kubernetes.name" . }}-data-config
-          mountPath: /elasticsearch/config
+          mountPath: /usr/share/elasticsearch/data
         - name: {{ template "kubernetes.name" . }}-data-scripts
-          mountPath: /elasticsearch/scripts
+          mountPath: /usr/share/elasticsearch/scripts
+        {{- range $key, $val := .Values.elasticsearchDataUseCustomConfig }}
+        {{- if $key }}
+        - name: {{ $ChartName }}-data-config-{{ $key | replace "-" "." }}
+          mountPath: /usr/share/elasticsearch/config/{{ $key }}
+        {{- end}}
+        {{- end}}
       volumes:
         - name: {{ template "kubernetes.name" . }}-data-storage
           hostPath:
             path: {{ .Values.elasticsearchPathPrefix }}/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/data
-        - name: {{ template "kubernetes.name" . }}-data-config
-          configMap:
-            name: {{ template "kubernetes.name" . }}-data-config
         - name: {{ template "kubernetes.name" . }}-data-scripts
           configMap:
             name: {{ template "kubernetes.name" . }}-data-scripts
             defaultMode: 0775
+        {{- range $key, $val := .Values.elasticsearchDataUseCustomConfig }}
+        {{- if $key }}
+        - name: {{ $ChartName }}-data-config-{{ $key | replace "-" "." }}
+          configMap:
+            name: {{ $ChartName }}-data-config
+            - key: {{ $key }}
+              path: {{ $key }}
+        {{- end}}
+        {{- end}}
+{{- end }}

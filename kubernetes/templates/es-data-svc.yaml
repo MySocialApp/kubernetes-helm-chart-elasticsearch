@@ -4,7 +4,10 @@ metadata:
   name: {{ template "kubernetes.name" . }}-data
   namespace: {{ .Release.Namespace }}
   labels:
-    component: {{ template "kubernetes.name" . }}
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ template "kubernetes.name" . }}"
     role: data
 spec:
   ports:
@@ -12,5 +15,5 @@ spec:
     name: transport
   clusterIP: None
   selector:
-    component: {{ template "kubernetes.name" . }}
+    app: "{{ template "kubernetes.name" . }}"
     role: data

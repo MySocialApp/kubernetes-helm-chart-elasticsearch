@@ -1,16 +1,21 @@
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
-  name: {{ template "kubernetes.name" . }}-discovery
-  namespace: {{ .Release.Namespace }}
+  name: {{ template "kubernetes.name" . }}-headless
   labels:
-    component: {{ template "kubernetes.name" . }}
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ template "kubernetes.name" . }}"
     role: master
+  annotations:
+    # Create endpoints also if the related pod isn't ready
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
+  clusterIP: None # This is needed for statefulset hostnames like elasticsearch-0 to resolve
   selector:
-    component: {{ template "kubernetes.name" . }}
-    role: master
+    app: "{{ template "kubernetes.name" . }}"
+    role: data
   ports:
-  - name: transport
-    port: 9300
-    protocol: TCP
+  - name: http
+    port: 9200

@@ -1,5 +1,14 @@
+### Elasticsearch common settings ###
+
+elasticsearchImage: docker.elastic.co/elasticsearch/elasticsearch
+elasticsearchImageVersion: 6.5.4
+
+elasticsearchPathPrefix: "/mnt"
+
 ### Master nodes ###
 
+# Enable Master node
+elasticsearchMasterEnable: true
 # Set where elasticsearch local data should be located
 elasticsearchMasterNodeSelector:
   node-role.kubernetes.io/node: "true"
@@ -11,33 +20,37 @@ elasticsearchMasterQuorum: 2
 # Number of maximum dead nodes
 elasticsearchMasterMaxUnavailableNodes: 1
 
-# Elasticsearch common settings
-elasticsearchMasterImageVersion: 5.6.9
 elasticsearchMasterJavaOptions: "-Xms256m -Xmx256m"
-elasticsearchPathPrefix: "/mnt/data"
+elasticsearchMasterExtraVars: {}
 
 ### Data nodes ###
 
+elasticsearchDataEnable: true
 elasticsearchDataNodeSelector:
   node-role.kubernetes.io/node: "true"
 
 elasticsearchDataReplicaCount: 3
 elasticsearchDataMaxUnavailableNodes: 1
 
-elasticsearchDataImageVersion: 5.6.9
-elasticsearchDataJavaOptions: "-Xms4g -Xmx4g"
+elasticsearchDataJavaOptions: "-Xms1g -Xmx1g"
+elasticsearchDataExtraVars: {}
+elasticsearchDataUseCustomConfig: {}
+#  elasticsearch.yml: false
+#  jvm.options: false
+#  log4j2.properties: false
 
-### Client nodes ###
+### Ingest nodes ###
 
-elasticsearchClientNodeSelector:
+elasticsearchIngestEnable: true
+elasticsearchIngestNodeSelector:
   node-role.kubernetes.io/node: "true"
 
-elasticsearchClientReplicaCount: 2
-elasticsearchClientMaxUnavailableNodes: 1
+elasticsearchIngestReplicaCount: 2
+elasticsearchIngestMaxUnavailableNodes: 1
 
-elasticsearchClientImageVersion: 5.6.9
-elasticsearchClientJavaOptions: "-Xms1g -Xmx1g"
-elasticsearchClientResources: {}
+elasticsearchIngestJavaOptions: "-Xms1g -Xmx1g"
+elasticsearchIngestExtraVars: {}
+elasticsearchIngestResources: {}
 #  limits:
 #    memory: 4G
 #    cpu: 500m
@@ -87,12 +100,12 @@ elasticsearchAlertmanager:
 
 ### Kibana ###
 
-kibanaEnabled: true
-#kibanaImage: kibana
-#kibanaVersion: 4.6.6
+kibanaEnabled: false
+kibanaImage: docker.elastic.co/kibana/kibana
 kibanaNodeSelector:
   node-role.kubernetes.io/node: "true"
   stateless: "true"
+kibanaExtraVars: {}
 kibanaResources: {}
 #  limits:
 #    cpu: 500m

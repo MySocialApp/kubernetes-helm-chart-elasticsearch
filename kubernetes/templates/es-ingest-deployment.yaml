@@ -1,0 +1,90 @@
+{{- if .Values.elasticsearchIngestEnable }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "kubernetes.name" . }}-ingest
+  namespace: {{ .Release.Namespace }}
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ template "kubernetes.name" . }}"
+    role: ingest
+spec:
+  replicas: {{ .Values.elasticsearchIngestReplicaCount }}
+  template:
+    metadata:
+      labels:
+        app: "{{ template "kubernetes.name" . }}"
+        role: ingest
+    spec:
+      nodeSelector:
+{{ toYaml .Values.elasticsearchIngestNodeSelector | indent 6 }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - {{ template "kubernetes.name" . }}
+              - key: role
+                operator: In
+                values:
+                - ingest
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 120
+      initContainers:
+      - name: configure-sysctl
+        image: "{{ .Values.elasticsearchImage }}:{{ .Values.elasticsearchImageVersion }}"
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          runAsUser: 0
+          privileged: true
+      containers:
+      - name: {{ template "kubernetes.name" . }}-ingest
+        image: "{{ .Values.elasticsearchImage }}:{{ .Values.elasticsearchImageVersion }}"
+        env:
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: discovery.zen.ping.unicast.hosts
+          value: "{{ template "kubernetes.name" . }}-headless"
+        - name: cluster.name
+          value: "{{ .Release.Namespace }}"
+        - name: discovery.zen.minimum_master_nodes
+          value: "{{ .Values.elasticsearchMasterQuorum }}"
+        - name: network.host
+          value: "0.0.0.0"
+        - name: "ES_JAVA_OPTS"
+          value: "{{ .Values.elasticsearchIngestJavaOptions }}"
+        - name: node.master
+          value: "false"
+        - name: node.data
+          value: "false"
+        - name: node.ingest
+          value: "true"
+{{- if .Values.elasticsearchIngestExtraVars }}
+{{ toYaml .Values.elasticsearchIngestExtraVars | indent 10 }}
+{{- end }}
+        resources:
+{{ toYaml .Values.elasticsearchIngestResources | indent 12 }}
+        livenessProbe:
+          tcpSocket:
+            port: 9300
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+          initialDelaySeconds: 20
+          timeoutSeconds: 5
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+{{- end }}

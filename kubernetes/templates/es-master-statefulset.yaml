@@ -1,0 +1,93 @@
+{{- if .Values.elasticsearchMasterEnable }}
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: {{ template "kubernetes.name" . }}-master
+  namespace: {{ .Release.Namespace }}
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ template "kubernetes.name" . }}"
+    role: master
+spec:
+  replicas: {{ .Values.elasticsearchMasterReplicaCount }}
+  updateStrategy:
+    type: "RollingUpdate"
+  selector:
+    matchLabels:
+      app: {{ template "kubernetes.name" . }}
+      role: master
+  template:
+    metadata:
+      labels:
+        app: "{{ template "kubernetes.name" . }}"
+        role: master
+    spec:
+      nodeSelector:
+{{ toYaml .Values.elasticsearchMasterNodeSelector | indent 6 }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - {{ template "kubernetes.name" . }}
+              - key: role
+                operator: In
+                values:
+                - master
+            topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: configure-sysctl
+        image: "{{ .Values.elasticsearchImage }}:{{ .Values.elasticsearchImageVersion }}"
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          runAsUser: 0
+          privileged: true
+      containers:
+      - name: {{ template "kubernetes.name" . }}-master
+        image: "{{ .Values.elasticsearchImage }}:{{ .Values.elasticsearchImageVersion }}"
+        env:
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: discovery.zen.ping.unicast.hosts
+          value: "{{ template "kubernetes.name" . }}-headless"
+        - name: cluster.name
+          value: "{{ .Release.Namespace }}"
+        - name: discovery.zen.minimum_master_nodes
+          value: "{{ .Values.elasticsearchMasterQuorum }}"
+        - name: network.host
+          value: "0.0.0.0"
+        - name: "ES_JAVA_OPTS"
+          value: "{{ .Values.elasticsearchMasterJavaOptions }}"
+        - name: node.master
+          value: "true"
+        - name: node.data
+          value: "false"
+        - name: node.ingest
+          value: "false"
+{{- if .Values.elasticsearchMasterExtraVars }}
+{{ toYaml .Values.elasticsearchMasterExtraVars | indent 8 }}
+{{- end }}
+        livenessProbe:
+          tcpSocket:
+            port: 9300
+        ports:
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: {{ template "kubernetes.name" . }}-master-storage
+          mountPath: /data
+      volumes:
+        - name: {{ template "kubernetes.name" . }}-master-storage
+          hostPath:
+            path: {{ .Values.elasticsearchPathPrefix }}/{{ .Release.Namespace }}/{{ template "kubernetes.name" . }}/master
+{{- end }}

@@ -5,10 +5,13 @@ metadata:
   name: kibana
   namespace: {{ .Release.Namespace }}
   labels:
-    component: kibana
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: kibana
 spec:
   selector:
-    component: kibana
+    app: kibana
   ports:
   - name: http
     port: 80
