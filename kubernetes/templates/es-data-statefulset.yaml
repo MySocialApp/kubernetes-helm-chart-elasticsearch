@@ -27,7 +27,9 @@ spec:
         role: data
     spec:
       nodeSelector:
-{{ toYaml .Values.elasticsearchDataNodeSelector | indent 6 }}
+        {{- range $key, $val := .Values.elasticsearchDataNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

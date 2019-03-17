@@ -22,7 +22,9 @@ spec:
         app: kibana
     spec:
       nodeSelector:
-{{ toYaml .Values.kibanaNodeSelector | indent 6 }}
+        {{- range $key, $val := .Values.kibanaNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       containers:
       - name: kibana
         image: {{ .Values.kibanaImage }}:{{ .Values.elasticsearchImageVersion }}

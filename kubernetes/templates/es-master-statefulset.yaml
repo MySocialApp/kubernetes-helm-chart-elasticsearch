@@ -25,7 +25,10 @@ spec:
         role: master
     spec:
       nodeSelector:
-{{ toYaml .Values.elasticsearchMasterNodeSelector | indent 6 }}
+      nodeSelector:
+        {{- range $key, $val := .Values.elasticsearchMasterNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

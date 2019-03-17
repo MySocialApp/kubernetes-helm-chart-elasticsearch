@@ -19,7 +19,9 @@ spec:
         role: ingest
     spec:
       nodeSelector:
-{{ toYaml .Values.elasticsearchIngestNodeSelector | indent 6 }}
+        {{- range $key, $val := .Values.elasticsearchIngestNodeSelector }}
+        {{ $key }}: {{ $val | quote }}
+        {{- end}}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
